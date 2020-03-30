@@ -1,26 +1,16 @@
 #include "pdp11.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "write_read.c"
 
-struct Command {
-	
-	word mask;
-	word opcode;
-	char * name;
-	void (*do_func)();
-	
-};
+#define pc reg[7]
 
-
-Arg ss, dd;
-Arg get_mode_reg(word w);
-int N, Z, C;
-int b_flag;
+struct SSDD ss, dd;
+struct SSDD get_mode_reg(word w);
 int NN, n;
+byte mem[MEMSIZE]
+word reg[8];
 
-void NZVC(w) {}
-	
+//void NZVC(w) {}
 	
 
 struct Command commd[] = {
@@ -30,9 +20,9 @@ struct Command commd[] = {
 	{0170000, 0000000, "halt", do_halt},
 };
 
-Arg get_mode_reg(word w) {
+struct SSDD get_mode_reg(word w) {
 	
-	Arg res;
+	struct SSDD res;
 	int r = w & 7;							// номер регистра
 	int mode = (w >> 3) & 7 				// номер моды	
 	
@@ -96,7 +86,7 @@ Arg get_mode_reg(word w) {
 		default:
 			fprintf(stderr, 
 			
-				"Mode %o NO IMPLEMENTED YET\N", mode);
+				"Mode %o NO IMPLEMENTED YET\n", mode);
 				
 			exit(1);	
 		}
