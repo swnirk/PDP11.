@@ -2,6 +2,20 @@
 #include <stdlib.h>
 #include "pdp11.h"
 
+#define pc reg[7]
+
+int NN, n;
+word reg[8];
+
+void b_write (Adress adr, byte b);
+byte b_read (Adress adr);
+void w_write (Adress adr, word w);
+word w_read (Adress adr);
+
+
+struct SSDD ss;
+struct SSDD dd;
+
 void do_halt() {
 	
 	printf("THE END!!!\n");
@@ -29,6 +43,7 @@ void do_sob() {
 	reg[n]--;
 	if (reg[n] != 0) 
 		pc = pc - 2*NN;
+	}
 		
 	
 void do_clr() {
