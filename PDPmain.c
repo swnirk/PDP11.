@@ -6,23 +6,49 @@
 void test_wr() {
 	
 	// пишем байт, читаем байт
+	
 	byte b0 = 0x0a;
 	b_write(2,b0); 
 	byte bres = b_read(2);
 	printf ("%02hhx = %02hhx\n", b0, bres);
 	assert(b0 == bres);
 	
-	//пишем 2 байта, читаем слово
+	//пишем слово, читаем слово
 	
-	Adress a = 4;
+	Adress adr = 4;
 	//byte b1 = 0xcb;
-	word w = 0xcb0a;
+	word wr = 0xcb0a;
 	//b_write(a,b0);
 	//b_write(a+1, b1);
-	w_write(a, w);
-	word wres = w_read(a);
-	printf ("%04hx = %04hx\n", wres, w);
-	assert(w == wres);
+	w_write(adr, wr);
+	word wres = w_read(adr);
+	printf ("%04hx = %04hx\n", wres, wr);
+	assert(wr == wres);
+	
+	//пишем слово, читаем 2 байта
+	
+	Adress a = 4;
+	byte b1 = 0xcb;
+	byte b2 = 0x0a;
+	word w = 0xcb0a;
+	word res1 = b_read(a+1);
+	word res2 = b_read(a);
+	printf("%04hx = %02hhx%02hhx\n", w, res1, res2);
+	assert (b1 == res1);
+	assert (b2 == res2);
+	
+	//пишем 2 байта, читаем слово
+	
+	Adress A = 4;
+	byte b3 = 0xfd;
+	byte b4 = 0xcd;
+	word wor = 0xfdcd;
+	b_write(A+1, b3);
+	b_write(A, b4);
+	word res = w_read(A);
+	printf("%02hhx%02hhx = %04hx\n", b3, b4, res);
+	assert(res == wor);
+
 }
 
 /*void test_do() {
