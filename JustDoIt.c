@@ -25,16 +25,22 @@ void do_halt() {
 void do_mov() {
 	
 	w_write(dd.adr, ss.val);
+	
+	NZVC(ss.val);
 }
 
 void do_bmov() {
 	
 	b_write(dd.adr, ss.val);
+	
+	NZVC(ss.val);
 }
 	
 void do_add() {
 	
 	w_write(dd.adr, (ss.val + dd.val)&0xFF);
+	
+	NZVC(ss.val + dd.val);
 	
 }
 
@@ -49,6 +55,8 @@ void do_sob() {
 void do_clr() {
 	
 	w_write(dd.adr, 0);
+	
+	NZVC(0);
 }
 
 void do_br() {
