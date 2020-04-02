@@ -59,7 +59,13 @@ struct Command commd[] = {
 	{0170000, 0000000, "halt", do_halt, HASNT_PARAM},
 };
 
-//void NZVC
+void NZVC (word w) {
+	
+	N = (b_or_w ? (w >> 15) : (w >> 7)) & 1;
+	Z = (w == 0);
+	C = (b_or_w ? (w >> 16) : (w >> 8)) & 1;
+	
+	}
 
 struct SSDD get_mode_reg(word w) {
 	
