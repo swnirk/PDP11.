@@ -4,7 +4,7 @@
 
 #define pc reg[7]
 
-int NN, n;
+int NN, n, XX;
 word reg[8];
 
 void b_write (Adress adr, byte b);
@@ -50,3 +50,9 @@ void do_clr() {
 	
 	w_write(dd.adr, 0);
 }
+
+void do_br() {
+	
+	pc = pc + XX*2;
+}
+
