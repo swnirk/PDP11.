@@ -41,10 +41,10 @@ void load_file() {
 	fscanf(test, "%hx%hx", &a, &N);
 	
 	
-	for(int j = a, int i = 0; i < N; j++, i++) {
+	for(int i = 0; i < N; i++) {
 		
 		fscanf(test, "%x", &b);
-		b_write(j+1, b);
+		b_write(a+i, b);
 	}
 		
 	
