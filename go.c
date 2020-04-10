@@ -30,7 +30,7 @@ void load_file() {
 	Adress a;
 	unsigned int b;
 	word N;
-	test = fopen("/home/ira/информатика/PDP11/01_sum.pdp.o", "r");
+	test = fopen("/home/ira/информатика/workpdp/01_sum.pdp.o", "r");
 	
 	if (test == NULL) {
 		
@@ -65,7 +65,19 @@ void NZVC (word w) {
 	Z = (w == 0);
 	C = (b_or_w ? (w >> 16) : (w >> 8)) & 1;
 	
-	}
+}
+
+void print_reg()
+{
+	int i;
+	for (i = 0; i < 8; i += 2)
+		trace ("R%d : %06o  ", i, reg[i]);
+	printf("\n");
+	
+	for (i = 1; i < 8; i += 2)
+		printf("R%d : %06o  ", i, reg[i]);
+
+}
 
 struct SSDD get_mode_reg(word w) {
 	
@@ -150,9 +162,10 @@ void run() {
 		trace ("%06o %06o : ", pc, w);
 		pc += 2;
 		int i = 0;
+		int size = sizeof(commd)/sizeof(struct Command);
 		struct Command cmmd;
 		
-		for (i = 0; ;i++) {
+		for (i = 0; i < size; i++) {
 			
 			cmmd = commd[i];
 			

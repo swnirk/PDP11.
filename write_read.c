@@ -31,6 +31,7 @@ void w_write (Adress adr, word w) {
 	
 	mem[adr] = (byte)(w);
 	mem[adr+1] = (byte)(w >> 8);
+	
 }
 
 word bw_read (Adress a, int nb, int r) {
