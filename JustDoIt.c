@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "pdp11.h"
 
-#define pc reg[7]
-
 int NN, n, XX;
 word reg[8];
 
@@ -25,39 +23,55 @@ void do_halt() {
 
 void do_mov() {
 	
-	w_write(dd.adr, ss.val);
+	dd.res = dd.val;
 	
+	if (dd.where == ZERO) 
+		reg[dd.adr] = dd.res;
+	else
+		w_write(dd.adr, dd.res);
+		
 	//NZVC(ss.val);
 }
 
 void do_bmov() {
-	
-	b_write(dd.adr, ss.val);
-	
-	//NZVC(ss.val);
+
+	dd.res = ss.val;
+	if (dd.where == ZERO)
+		reg[dd.adr] = byte_to_word(dd.res);
+	else
+		b_write(dd.adr, (byte)dd.res);
+
 }
+
 	
 void do_add() {
 	
-	w_write(dd.adr, (ss.val + dd.val)&0xFF);
+	dd.res = dd.val + ss.val;
 	
-	//NZVC(ss.val + dd.val);
+	if (dd.where == ZERO)
+		reg[dd.adr] = dd.res;
+	else
+		w_write(dd.adr, dd.res);
 	
 }
 
 void do_sob() {
 	
 	reg[n]--;
+	
 	if (reg[n] != 0) 
 		pc = pc - 2*NN;
-	}
+}
 		
-	
 void do_clr() {
 	
-	w_write(dd.adr, 0);
+	dd.res = dd.val = 0;
 	
-	//NZVC(0);
+	if(dd.where == ZERO)
+		reg[dd.adr] = dd.res;
+	else
+		w_write(dd.adr, dd.res);
+
 }
 
 /*void do_br() {

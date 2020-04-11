@@ -65,7 +65,7 @@ void test_wr() {
 	
 int main () {
 	
-	test_wr();
+	//test_wr();
 	load_file();
 	run();
 	do_halt();

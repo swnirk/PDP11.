@@ -15,7 +15,7 @@ void trace (const char * fmt, ...) {
 }
 
 struct SSDD ss, dd;
-struct SSDD get_mode_reg(word w);
+struct SSDD get_mode_reg(word w, int b);
 byte mem[MEMSIZE];
 word reg[8];
 
@@ -28,7 +28,7 @@ void load_file() {
 	
 	FILE * test = NULL;
 	Adress a;
-	unsigned int b;
+	unsigned int bt;
 	word N;
 	test = fopen("/home/ira/информатика/workpdp/01_sum.pdp.o", "r");
 	
@@ -43,8 +43,8 @@ void load_file() {
 	
 	for(int i = 0; i < N; i++) {
 		
-		fscanf(test, "%x", &b);
-		b_write(a+i, b);
+		fscanf(test, "%x", &bt);
+		b_write(a+i, bt);
 	}
 		
 	
@@ -79,14 +79,45 @@ void print_reg()
 
 }
 
-struct SSDD get_mode_reg(word w) {
+
+word byte_to_word(byte b) {
+
+    word w;
+    if (SIGN(b, 1) == 0) {
+        w = 0;
+        w |= b;
+    }
+    else {
+        w = ~0xFF;
+        w |= b;
+    }
+    return w;
+}
+
+struct Operand {
+    int B;        // Byte
+    word r1;      // 1 operand
+    word r2;      // 2 operand
+};
+
+struct Operand create(word w) {
+    struct Operand res;
+
+    res.B = (w >> 15);
+    res.r1 = (w >> 6) & 7;
+    res.r2 = w & 7;
+    return res;
+}
+
+struct SSDD get_mode_reg(word w, int b) {
 	
 	struct SSDD res;
-	int r = w & 7;
-	int mode = (w >> 3) & 7;
-	int b1, b2;
+	int r = w & 7;					// номер регистра
+	int mode = (w >> 3) & 7;		// номер моды
+	/*int b1, b2;
 	b2 = b_or_w;
-	b1 = (((b_or_w)||(r==6)||(r==7)) ? 2 : 1);
+	b1 = (((b_or_w)||(r == 6)||(r == 7)) ? 2 : 1);*/
+	res.where = OK;
 	
 	switch(mode) {
 		
@@ -94,54 +125,77 @@ struct SSDD get_mode_reg(word w) {
 			res.adr = r;
 			res.val = reg[r];
 			trace ("R%o ", r);
+			res.where = ZERO;
 			break;
 		
 		case 1:
 			res.adr = reg[r];
-			res.val = bw_read(res.adr, b2, r);
+			res.val = b ? b_read(res.adr) : w_read(res.adr); 
 			trace ("(R%o) ", r);
 			break;
 		
 		case 2:
-			res.adr = reg[r];
-			res.val = bw_read(res.adr, b2, r);
-			reg[r] += b1;
 			
-			if (r == 7) 
+			if (r == 7) {
+				
+				res.adr = reg[r];
+				res.val = b ? b_read(res.adr) : w_read(res.adr);
 				trace ("#%o ", res.val);
-			else 
+			}
+			
+			else {
+				
+				res.adr = reg[r];
+				res.val = b ? b_read(res.adr) : w_read(res.adr);
 				trace ("(R%o)+ ", r);
+			}
+				
+			if (r == 7 || r == 6 || b == 0)
+				reg[r] += 2;
+			else 
+				reg[r]++;
+				
 			break;
 			
 		case 3:
 			res.adr = reg[r];
-			res.adr = bw_read(res.adr, b2, r);
-			reg[r] += b1;
-			res.val = bw_read(res.adr, b2, r);
-			
-			if (r == 7) 
-				trace ("#%o ", res.val);
-			else 
-				trace ("@(R%o)+ ", r);
-			break;
+			if (r == 7 || r == 6 || b == 0) {
+				res.adr = w_read ((Adress) reg[r]);
+				res.val = w_read ((Adress) w_read ((Adress) (reg[r])));
+				printf ("@#%o", w_read((Adress) (reg[r])));
+				reg[r] += 2;
+			}
+            else {
+				res.adr = w_read ((Adress) reg[r]);
+				res.val = b_read ((Adress) w_read ((Adress) (reg[r])));
+				reg[r] += 2;       // reg[r] ++;
+				printf ("@(R%o)+", r);
+			}
+            break;
 			
 		case 4:
-			reg[r] -= b1;
-			res.adr = reg[r];
-			res.val = bw_read(res.adr, b2, r);
-			trace("-(R%o) ", r);
+			if (r == 7 || r == 6 || b == 0) {
+				reg[r] -= 2;
+				res.adr = reg[r];
+				res.val = w_read (res.adr);
+			}
+			else {
+				reg[r] --;
+				res.adr = reg[r];
+				res.val = b_read (res.adr);
+			}
+			
+			trace ("-(R%d) ", r);
+            
 			break;
 		
 		case 5:
-			reg[r] -= b1;
+			printf ("@-(R%o)", r);
+			reg[r] -= 2;
 			res.adr = reg[r];
-			res.adr = bw_read(res.adr, b2, r);
-			res.val = bw_read(res.adr, b2, r);
+			res.adr = w_read (res.adr);
+			res.val = w_read (res.adr);
 			
-			if (r == 7) 
-				trace ("#%o ", res.val);
-			else 
-				trace ("@-(R%o)+ ", r);
 			break;
 			
 		default:
@@ -161,7 +215,8 @@ void run() {
 		word w = w_read(pc);
 		trace ("%06o %06o : ", pc, w);
 		pc += 2;
-		int i = 0;
+		struct Operand OP = create(w);
+		int i;
 		int size = sizeof(commd)/sizeof(struct Command);
 		struct Command cmmd;
 		
@@ -173,11 +228,19 @@ void run() {
 				
 				trace ("%s ", cmmd.name);
 				cmmd.do_func();
-				if (cmmd.param & HAS_SS)
-					ss = get_mode_reg (w>>6);
+				if (cmmd.param & HAS_SS) {
+					ss = get_mode_reg (w >> 6, OP.B);
+					dd = get_mode_reg(w, OP.B);
+					trace ("\n ss = %o, %o\n", ss.val, ss.adr);
+					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
+					print_reg();
+				}
+					
 
-                if (cmmd.param & HAS_DD)
-					dd = get_mode_reg(w);
+                if (cmmd.param & HAS_DD) {
+					dd = get_mode_reg(w, OP.B);
+					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
+				}
 					
                 }
 		}

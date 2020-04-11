@@ -11,7 +11,10 @@ byte mem [MEMSIZE];
 
 void b_write (Adress adr, byte b) {
 	
-	mem[adr] = b;
+	if (adr < 8)
+		reg[adr] = ((b >> 7) ? (b | 0xFF00) : b);
+	else
+		mem[adr] = b;
 }
 
 byte b_read (Adress adr) {
@@ -20,17 +23,20 @@ byte b_read (Adress adr) {
 
 word w_read (Adress a) {
 	
-	word w = ((word)mem[a+1]) << 8;
-	//printf ("w = %x\n", w);
-	w = w | mem[a];
+	word w = ((b_read(a + 1) << 8) | (b_read(a) & 0xFF));
 	trace ("//%04hx//\n", w);
 	return w;
 }
 
 void w_write (Adress adr, word w) {
 	
-	mem[adr] = (byte)(w);
-	mem[adr+1] = (byte)(w >> 8);
+	if (adr < 15)
+		reg[adr] = w;
+		
+	else {
+		mem[adr] = (byte)(w & 0xFF);
+		mem[adr+1] = (byte)((w >> 8) & 0xFF);
+	}
 	
 }
 
