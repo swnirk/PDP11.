@@ -24,7 +24,7 @@ byte b_read (Adress adr) {
 word w_read (Adress a) {
 	
 	word w = ((b_read(a + 1) << 8) | (b_read(a) & 0xFF));
-	trace ("//%04hx//\n", w);
+	//trace ("//%04hx//\n", w);
 	return w;
 }
 
@@ -40,8 +40,4 @@ void w_write (Adress adr, word w) {
 	
 }
 
-word bw_read (Adress a, int nb, int r) {
-	
-	return (((nb)|(r == 6)|(r == 7)) ? w_read(a) : b_read(a));
-}
 
