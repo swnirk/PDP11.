@@ -69,13 +69,18 @@ void NZVC (word w) {
 
 void print_reg()
 {
+	trace("\n");
+	
 	int i;
 	for (i = 0; i < 8; i += 2)
-		trace ("R%d : %06o  ", i, reg[i]);
+		trace ("R%d = %06o   ", i, reg[i]);
+		
 	printf("\n");
 	
 	for (i = 1; i < 8; i += 2)
-		printf("R%d : %06o  ", i, reg[i]);
+		trace("R%d = %06o    ", i, reg[i]);
+		
+	trace ("\n\n");
 
 }
 
@@ -114,10 +119,6 @@ struct SSDD get_mode_reg(word w, int b) {
 	struct SSDD res;
 	int r = w & 7;					// номер регистра
 	int mode = (w >> 3) & 7;		// номер моды
-	/*int b1, b2;
-	b2 = b_or_w;
-	b1 = (((b_or_w)||(r == 6)||(r == 7)) ? 2 : 1);*/
-	res.where = OK;
 	
 	switch(mode) {
 		
@@ -125,7 +126,6 @@ struct SSDD get_mode_reg(word w, int b) {
 			res.adr = r;
 			res.val = reg[r];
 			trace ("R%o ", r);
-			res.where = ZERO;
 			break;
 		
 		case 1:
@@ -208,12 +208,15 @@ struct SSDD get_mode_reg(word w, int b) {
 
 void run() {
 	
+	trace ("\n-------------running-------------\n");
+	
 	pc = 01000;
 	
 	while (1) {
 		
 		word w = w_read(pc);
-		trace ("%06o %06o : ", pc, w);
+		//trace ("%06o %06o : ", pc, w);			//отладочная печать
+		trace ("%06o : ", pc);					//обычная печать
 		pc += 2;
 		struct Operand OP = create(w);
 		int i;
@@ -224,25 +227,27 @@ void run() {
 			
 			cmmd = commd[i];
 			
-			if ((w & cmmd.mask) == cmmd.opcode) {
+			if ((cmmd.mask & w) == cmmd.opcode) {
 				
-				trace ("%s ", cmmd.name);
-				cmmd.do_func();
+				trace ("%s    ", cmmd.name);
+				
 				if (cmmd.param & HAS_SS) {
 					ss = get_mode_reg (w >> 6, OP.B);
-					dd = get_mode_reg(w, OP.B);
-					trace ("\n ss = %o, %o\n", ss.val, ss.adr);
-					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
-					print_reg();
+					//trace ("\n ss = %o, %o\n", ss.val, ss.adr);
 				}
 					
 
-                if (cmmd.param & HAS_DD) {
+				if (cmmd.param & HAS_DD) {
 					dd = get_mode_reg(w, OP.B);
-					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
+					//trace ("\n dd = %o, %o\n", dd.val, dd.adr);
 				}
+				
+				cmmd.do_func();
 					
-                }
+			}
 		}
+						
+		trace ("\n");
+		print_reg();
 	}
 }
