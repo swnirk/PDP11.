@@ -2,13 +2,10 @@
 #include <stdlib.h>
 #include "pdp11.h"
 
-int NN, n, XX;
+int n, XX;
 word reg[8];
 
-void b_write (Adress adr, byte b);
-byte b_read (Adress adr);
-void w_write (Adress adr, word w);
-word w_read (Adress adr);
+struct Operand psw;
 
 
 struct SSDD ss;
@@ -16,30 +13,24 @@ struct SSDD dd;
 
 void do_halt() {
 	
-	printf("THE END!!!\n");
+	printf("\n\n-------------THE END!!!-------------\n\n");
 	print_reg();
 	exit(0);
 }
 
 void do_mov() {
 	
-	dd.res = dd.val;
-	
-	if (dd.where == ZERO) 
-		reg[dd.adr] = dd.res;
-	else
-		w_write(dd.adr, dd.res);
+	dd.res = ss.val;
+	w_write(dd.adr, dd.res);
 		
-	//NZVC(ss.val);
+	NZVC(psw);
 }
 
 void do_bmov() {
 
 	dd.res = ss.val;
-	if (dd.where == ZERO)
-		reg[dd.adr] = byte_to_word(dd.res);
-	else
-		b_write(dd.adr, (byte)dd.res);
+	b_write(dd.adr, (byte)dd.res);
+	NZVC(psw);
 
 }
 
@@ -47,34 +38,30 @@ void do_bmov() {
 void do_add() {
 	
 	dd.res = dd.val + ss.val;
-	
-	if (dd.where == ZERO)
-		reg[dd.adr] = dd.res;
-	else
-		w_write(dd.adr, dd.res);
+	w_write(dd.adr, dd.res);
+	NZVC(psw);
 	
 }
 
 void do_sob() {
 	
-	reg[n]--;
+	reg[NN.adr]--;
 	
-	if (reg[n] != 0) 
-		pc = pc - 2*NN;
+	if (reg[NN.adr] != 0) 
+		pc = pc - 2*NN.val;
+	
+	NZVC(psw);
 }
 		
 void do_clr() {
 	
 	dd.res = dd.val = 0;
-	
-	if(dd.where == ZERO)
-		reg[dd.adr] = dd.res;
-	else
-		w_write(dd.adr, dd.res);
+	w_write(dd.adr, dd.res);
+	NZVC(psw);
 
 }
 
-/*void do_br() {
+void do_br() {
 	
 	pc = pc + XX*2;
 }
@@ -89,7 +76,7 @@ void do_bpl() {
 	
 	if (N == 0)
 		do_br();
-}*/
+}
 
 /*void do_tstb() {
 	
