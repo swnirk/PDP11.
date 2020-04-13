@@ -6,6 +6,11 @@
 int b_or_w;
 int N, Z, C;
 
+struct SSDD ss, dd, NN;
+struct SSDD get_mode_reg(word w, int b);
+byte mem[MEMSIZE];
+word reg[8];
+
 void trace (const char * fmt, ...) {
 	
 	va_list ap;
@@ -14,22 +19,12 @@ void trace (const char * fmt, ...) {
 	va_end(ap);
 }
 
-struct SSDD ss, dd;
-struct SSDD get_mode_reg(word w, int b);
-byte mem[MEMSIZE];
-word reg[8];
-
-void b_write (Adress adr, byte b);
-byte b_read (Adress adr);
-void w_write (Adress adr, word w);
-word w_read (Adress adr);
-
 void load_file() {
 	
 	FILE * test = NULL;
-	Adress a;
+	Adress a, A;
 	unsigned int bt;
-	word N;
+	word n, N;
 	test = fopen("/home/ira/информатика/workpdp/01_sum.pdp.o", "r");
 	
 	if (test == NULL) {
@@ -46,7 +41,15 @@ void load_file() {
 		fscanf(test, "%x", &bt);
 		b_write(a+i, bt);
 	}
+	
+	fscanf(test, "%hx%hx", &A, &n);
+	
+	
+	for(int i = 0; i < n; i++) {
 		
+		fscanf(test, "%x", &bt);
+		b_write(A+i, bt);
+	}
 	
 	fclose(test);
 }
@@ -56,16 +59,14 @@ struct Command commd[] = {
 	{0170000, 0010000, "mov", do_mov, HAS_DD | HAS_SS},
 	{0170000, 0060000, "add", do_add, HAS_DD | HAS_SS},
 	{0170000, 0110000, "movb", do_bmov, HAS_DD | HAS_SS},
-	{0170000, 0000000, "halt", do_halt, HASNT_PARAM},
+	{0177777, 0000000, "halt", do_halt, HASNT_PARAM},
+	{0177000, 0077000, "sob",  do_sob,  HAS_NN},
+	{0017700, 0005000, "clr",  do_clr,  HAS_DD},
+	{0177400, 0000400, "br",   do_br,   HAS_XX},
+	{0177400, 0001400, "beq",  do_beq,  HAS_XX},
+	{0177400,  0100000, "bpl",  do_bpl,  HAS_XX},
 };
 
-void NZVC (word w) {
-	
-	N = (b_or_w ? (w >> 15) : (w >> 7)) & 1;
-	Z = (w == 0);
-	C = (b_or_w ? (w >> 16) : (w >> 8)) & 1;
-	
-}
 
 void print_reg()
 {
@@ -85,7 +86,7 @@ void print_reg()
 }
 
 
-word byte_to_word(byte b) {
+word byte_or_word(byte b) {
 
     word w;
     if (SIGN(b, 1) == 0) {
@@ -99,20 +100,47 @@ word byte_to_word(byte b) {
     return w;
 }
 
-struct Operand {
-    int B;        // Byte
-    word r1;      // 1 operand
-    word r2;      // 2 operand
-};
 
 struct Operand create(word w) {
     struct Operand res;
 
-    res.B = (w >> 15);
+    res.Byte = (w >> 15);
     res.r1 = (w >> 6) & 7;
     res.r2 = w & 7;
     return res;
 }
+
+void NZVC (struct Operand psw) {
+	
+	
+	if (psw.Byte) {
+		
+		N = (dd.res >> 7) & 1;
+		C = (dd.res >> 8) & 1;
+	}
+	
+	else {
+		
+		N = (dd.res >> 15) & 1;
+		C = (dd.res >> 16) & 1;
+	}
+	
+	Z = (dd.res == 0);
+}
+
+struct SSDD get_NN (word w) {
+	
+	struct SSDD res;
+
+	res.adr = (w >> 6) & 07;
+	res.val = w & 077;
+
+	printf("R%d, %o", reg[NN.adr], pc - 2 * NN.val);
+
+	return res;
+}
+
+	
 
 struct SSDD get_mode_reg(word w, int b) {
 	
@@ -190,7 +218,7 @@ struct SSDD get_mode_reg(word w, int b) {
 			break;
 		
 		case 5:
-			printf ("@-(R%o)", r);
+			trace ("@-(R%o)", r);
 			reg[r] -= 2;
 			res.adr = reg[r];
 			res.adr = w_read (res.adr);
@@ -232,14 +260,24 @@ void run() {
 				trace ("%s    ", cmmd.name);
 				
 				if (cmmd.param & HAS_SS) {
-					ss = get_mode_reg (w >> 6, OP.B);
+					ss = get_mode_reg (w >> 6, OP.Byte);
 					//trace ("\n ss = %o, %o\n", ss.val, ss.adr);
 				}
 					
 
 				if (cmmd.param & HAS_DD) {
-					dd = get_mode_reg(w, OP.B);
+					dd = get_mode_reg(w, OP.Byte);
 					//trace ("\n dd = %o, %o\n", dd.val, dd.adr);
+				}
+				
+				if (cmmd.param & HAS_NN) {
+					
+					NN = get_NN(w);
+				}
+				
+				if (cmmd.param & HAS_XX) {
+					
+					XX = (char)(w & 255);
 				}
 				
 				cmmd.do_func();
