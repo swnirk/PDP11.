@@ -9,14 +9,22 @@ typedef word Adress;			 // 16 bit
 #define MEMSIZE (64*1024)
 #define pc reg[7]
 #define FULL_DEBAG 2
-#define HAS_SS (1<<1)
-#define HAS_DD (1<<2)
+#define HAS_SS 1
+#define HAS_DD 2
+#define HAS_NN 4
+#define HAS_XX 8
 #define HASNT_PARAM 0
+#define ostat 0177564			// регистр данных ввода
+#define odata 0177566			// регистр данных дисплея
+#define SIGN(w, is_byte) (is_byte ? ((w)>>7)&1 : ((w)>>15)&1 )
+#define pc reg[7]
+
 
 struct SSDD {
 	
 	word val;		//значение аргумента
-	word adr;		//адрес аргумента 
+	word adr;		//адрес аргумента
+	word res;		//адрес
 	
 };
 
@@ -30,33 +38,48 @@ struct Command {
 	
 };
 
+struct Operand {
+    int Byte;        // Byte
+    word r1;      	// 1 operand
+    word r2;       // 2 operand
+};
+
 void b_write (Adress adr, byte b);
 byte b_read (Adress adr);
 void w_write (Adress adr, word w);
 word w_read (Adress adr);
-word bw_read (Adress a, int nb, int r);
+
+word byte_to_word(byte b);
 
 void trace(const char * fmt, ...);
 void load_file();
 void run();
+void print_reg();
+void NZVC(struct Operand psw);
+
+struct SSDD get_NN (word w);
 
 
 void do_mov();
 void do_bmov();
 void do_add();
 void do_halt();
+void do_sob();
 void do_clr();
 void do_br();
+void do_beq();
+void do_bpl();
+void d0_tstb();
 
-void NZVC(word w);
+
 
 extern int b_or_w;
 extern int N, Z, C;
-extern int NN, n, XX;
+extern int n, XX;
 extern byte mem[MEMSIZE];
 extern word reg[8];
 
 extern struct Command commd[];
-extern struct SSDD ss,dd;
+extern struct SSDD ss,dd, NN;
 
 //#endif
