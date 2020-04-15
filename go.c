@@ -22,9 +22,9 @@ void trace (const char * fmt, ...) {
 void load_file() {
 	
 	FILE * test = NULL;
-	Adress a, A;
+	Adress a;
 	unsigned int bt;
-	word n, N;
+	word N;
 	test = fopen("/home/ira/информатика/workpdp/01_sum.pdp.o", "r");
 	
 	if (test == NULL) {
@@ -33,38 +33,46 @@ void load_file() {
 		exit(1);
 	}
 	
-	fscanf(test, "%hx%hx", &a, &N);
 	
-	
-	for(int i = 0; i < N; i++) {
+	while (fscanf(test, "%hx%hx", &a, &N) == 2) {
 		
-		fscanf(test, "%x", &bt);
-		b_write(a+i, bt);
+		for(int i = 0; i < N; i++) {
+		
+			fscanf(test, "%x", &bt);
+			b_write(a+i, bt);
+		}
 	}
 	
-	fscanf(test, "%hx%hx", &A, &n);
-	
-	
-	for(int i = 0; i < n; i++) {
-		
-		fscanf(test, "%x", &bt);
-		b_write(A+i, bt);
-	}
+	mem_dump(01000, N);
 	
 	fclose(test);
 }
 
+void mem_dump(Adress A, word N) {
+
+	int i = 0;
+
+	trace ("---------------mem_dump----------------\n");
+	
+    for (i = 0; i <= N; i += 2)
+		trace("%06o : %06o\n", A + i , w_read(A + i));
+
+
+}
+
 struct Command commd[] = {
 	
-	{0170000, 0010000, "mov", do_mov, HAS_DD | HAS_SS},
-	{0170000, 0060000, "add", do_add, HAS_DD | HAS_SS},
+	{0170000, 0010000, "mov",  do_mov,  HAS_DD | HAS_SS},
+	{0170000, 0060000, "add",  do_add,  HAS_DD | HAS_SS},
 	{0170000, 0110000, "movb", do_bmov, HAS_DD | HAS_SS},
 	{0177777, 0000000, "halt", do_halt, HASNT_PARAM},
 	{0177000, 0077000, "sob",  do_sob,  HAS_NN},
 	{0017700, 0005000, "clr",  do_clr,  HAS_DD},
 	{0177400, 0000400, "br",   do_br,   HAS_XX},
 	{0177400, 0001400, "beq",  do_beq,  HAS_XX},
-	{0177400,  0100000, "bpl",  do_bpl,  HAS_XX},
+	{0177400, 0100000, "bpl",  do_bpl,  HAS_XX},
+	{0177700, 0105700, "tstb", do_tstb, HAS_DD},
+	{0177700, 0005700, "tst",  do_tst,  HAS_DD},
 };
 
 
@@ -89,7 +97,7 @@ void print_reg()
 word byte_or_word(byte b) {
 
     word w;
-    if (SIGN(b, 1) == 0) {
+    if (BW(b, 1) == 0) {
         w = 0;
         w |= b;
     }
@@ -135,7 +143,7 @@ struct SSDD get_NN (word w) {
 	res.adr = (w >> 6) & 07;
 	res.val = w & 077;
 
-	printf("R%d, %o", reg[NN.adr], pc - 2 * NN.val);
+	trace("R%d, %o", reg[NN.adr], pc - 2 * NN.val);
 
 	return res;
 }
@@ -187,18 +195,15 @@ struct SSDD get_mode_reg(word w, int b) {
 			
 		case 3:
 			res.adr = reg[r];
-			if (r == 7 || r == 6 || b == 0) {
-				res.adr = w_read ((Adress) reg[r]);
-				res.val = w_read ((Adress) w_read ((Adress) (reg[r])));
-				printf ("@#%o", w_read((Adress) (reg[r])));
-				reg[r] += 2;
-			}
-            else {
-				res.adr = w_read ((Adress) reg[r]);
-				res.val = b_read ((Adress) w_read ((Adress) (reg[r])));
-				reg[r] += 2;       // reg[r] ++;
+			res.adr = reg[r];
+			res.val = w_read(res.adr);
+			reg[r] += 2;
+			
+			if (r == 7 || r == 6 || b == 0) 
+				trace ("@#%o", w_read(res.adr));	
+            else 
 				printf ("@(R%o)+", r);
-			}
+				
             break;
 			
 		case 4:
@@ -208,7 +213,7 @@ struct SSDD get_mode_reg(word w, int b) {
 				res.val = w_read (res.adr);
 			}
 			else {
-				reg[r] --;
+				reg[r]--;
 				res.adr = reg[r];
 				res.val = b_read (res.adr);
 			}
