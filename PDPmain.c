@@ -68,7 +68,6 @@ int main () {
 	//test_wr();
 	load_file();
 	run();
-	do_halt();
 	return 0;
 }
 
