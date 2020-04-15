@@ -30,6 +30,9 @@ void do_bmov() {
 
 	dd.res = ss.val;
 	b_write(dd.adr, (byte)dd.res);
+	
+	if (dd.adr == odata)
+		printf("%c", ss.val);
 	NZVC(psw);
 
 }
@@ -49,14 +52,14 @@ void do_sob() {
 	
 	if (reg[NN.adr] != 0) 
 		pc = pc - 2*NN.val;
-	
-	NZVC(psw);
 }
 		
 void do_clr() {
 	
 	dd.res = dd.val = 0;
 	w_write(dd.adr, dd.res);
+	N = 0;
+	Z = 1;
 	NZVC(psw);
 
 }
@@ -78,9 +81,14 @@ void do_bpl() {
 		do_br();
 }
 
-/*void do_tstb() {
+void do_tstb() {
 	
-	NZVC(dd.val);
-	C = 0;
-}*/
+	dd.res = dd.val;
+	NZVC(psw);
+}
 
+void do_tst() {
+	
+	dd.res = dd.val;
+	NZVC(psw);
+}
