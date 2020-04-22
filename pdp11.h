@@ -8,16 +8,19 @@ typedef word Adress;			 // 16 bit
 
 #define MEMSIZE (64*1024)
 #define pc reg[7]
-#define FULL_DEBAG 2
+#define sp reg[6]
 #define HAS_SS 1
 #define HAS_DD 2
 #define HAS_NN 4
 #define HAS_XX 8
+#define HAS_MR (1<<4)
 #define HASNT_PARAM 0
 #define ostat 0177564			// регистр данных ввода
 #define odata 0177566			// регистр данных дисплея
-#define SIGN(w, is_byte) (is_byte ? ((w)>>7)&1 : ((w)>>15)&1 )
+#define BW(w, is_byte) (is_byte ? ((w)>>7)&1 : ((w)>>15)&1 )
 #define pc reg[7]
+#define HAS_MR (1<<4)
+#define HAS_LR (1<<5)
 
 
 struct SSDD {
@@ -55,9 +58,11 @@ void trace(const char * fmt, ...);
 void load_file();
 void run();
 void print_reg();
-void NZVC(struct Operand psw);
+void mem_dump(Adress A, word N);
+void NZVC(struct Operand oper);
+struct Operand create(word w);
 
-struct SSDD get_NN (word w);
+//struct SSDD get_NN (word w);
 
 
 void do_mov();
@@ -69,17 +74,22 @@ void do_clr();
 void do_br();
 void do_beq();
 void do_bpl();
-void d0_tstb();
+void do_tstb();
+void do_tst();
+void do_jsr();
+void do_rts();
 
 
 
 extern int b_or_w;
 extern int N, Z, C;
 extern int n, XX;
+extern word X;
 extern byte mem[MEMSIZE];
 extern word reg[8];
 
 extern struct Command commd[];
-extern struct SSDD ss,dd, NN;
+extern struct SSDD ss, dd, NN;
+extern struct Operand oper;
 
 //#endif
