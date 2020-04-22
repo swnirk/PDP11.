@@ -73,6 +73,8 @@ struct Command commd[] = {
 	{0177400, 0100000, "bpl",  do_bpl,  HAS_XX},
 	{0177700, 0105700, "tstb", do_tstb, HAS_DD},
 	{0177700, 0005700, "tst",  do_tst,  HAS_DD},
+	{0177000, 0004000, "jsr",  do_jsr,  HAS_DD},
+	{0177770, 0000200, "rts",  do_rts,  HAS_DD},
 };
 
 
@@ -113,15 +115,15 @@ struct Operand create(word w) {
     struct Operand res;
 
     res.Byte = (w >> 15);
-    res.r1 = (w >> 6) & 7;
+    res.r1 = (w >> 6)&7;
     res.r2 = w & 7;
     return res;
 }
 
-void NZVC (struct Operand psw) {
+void NZVC (struct Operand oper) {
 	
 	
-	if (psw.Byte) {
+	if (oper.Byte) {
 		
 		N = (dd.res >> 7) & 1;
 		C = (dd.res >> 8) & 1;
@@ -134,6 +136,8 @@ void NZVC (struct Operand psw) {
 	}
 	
 	Z = (dd.res == 0);
+	
+	trace ("\n N = %d\n C = %d\n Z = %d", N, C, Z);
 }
 
 struct SSDD get_NN (word w) {
@@ -143,7 +147,7 @@ struct SSDD get_NN (word w) {
 	res.adr = (w >> 6) & 07;
 	res.val = w & 077;
 
-	trace("R%d, %o", reg[NN.adr], pc - 2 * NN.val);
+	trace ("R%d, %o", reg[NN.adr], pc - 2 * NN.val);
 
 	return res;
 }
@@ -155,16 +159,19 @@ struct SSDD get_mode_reg(word w, int b) {
 	struct SSDD res;
 	int r = w & 7;					// номер регистра
 	int mode = (w >> 3) & 7;		// номер моды
+	word X;
 	
 	switch(mode) {
 		
 		case 0:
+		
 			res.adr = r;
 			res.val = reg[r];
 			trace ("R%o ", r);
 			break;
 		
 		case 1:
+		
 			res.adr = reg[r];
 			res.val = b ? b_read(res.adr) : w_read(res.adr); 
 			trace ("(R%o) ", r);
@@ -194,6 +201,7 @@ struct SSDD get_mode_reg(word w, int b) {
 			break;
 			
 		case 3:
+		
 			res.adr = reg[r];
 			res.adr = reg[r];
 			res.val = w_read(res.adr);
@@ -202,12 +210,14 @@ struct SSDD get_mode_reg(word w, int b) {
 			if (r == 7 || r == 6 || b == 0) 
 				trace ("@#%o", w_read(res.adr));	
             else 
-				printf ("@(R%o)+", r);
+				trace ("@(R%o)+", r);
 				
             break;
 			
 		case 4:
+		
 			if (r == 7 || r == 6 || b == 0) {
+				
 				reg[r] -= 2;
 				res.adr = reg[r];
 				res.val = w_read (res.adr);
@@ -223,12 +233,28 @@ struct SSDD get_mode_reg(word w, int b) {
 			break;
 		
 		case 5:
-			trace ("@-(R%o)", r);
+		
+			trace ("@-(R%o) ", r);
 			reg[r] -= 2;
 			res.adr = reg[r];
 			res.adr = w_read (res.adr);
 			res.val = w_read (res.adr);
 			
+			break;
+		
+		case 6:
+				
+			X = w_read(pc);
+			pc += 2;
+			res.adr = (reg[r] + X) & 0xFFFF;
+			res.val = w_read(res.adr);
+			
+			if (r == 7) 
+				trace ("%o ", res.adr);
+				
+			else 
+				trace ("%o(R%d) ", X, r);
+				
 			break;
 			
 		default:
@@ -244,14 +270,15 @@ void run() {
 	trace ("\n-------------running-------------\n");
 	
 	pc = 01000;
+	w_write(ostat, 0xFF);
 	
 	while (1) {
 		
 		word w = w_read(pc);
-		//trace ("%06o %06o : ", pc, w);			//отладочная печать
-		trace ("%06o : ", pc);					//обычная печать
+		trace ("%06o : %06o ", pc, w);			//отладочная печать
+		//trace ("%06o : ", pc);						//обычная печать
 		pc += 2;
-		struct Operand OP = create(w);
+		struct Operand oper = create(w);
 		int i;
 		int size = sizeof(commd)/sizeof(struct Command);
 		struct Command cmmd;
@@ -265,14 +292,14 @@ void run() {
 				trace ("%s    ", cmmd.name);
 				
 				if (cmmd.param & HAS_SS) {
-					ss = get_mode_reg (w >> 6, OP.Byte);
-					//trace ("\n ss = %o, %o\n", ss.val, ss.adr);
+					ss = get_mode_reg (w >> 6, oper.Byte);
+					trace ("\n ss = %o, %o\n", ss.val, ss.adr);
 				}
 					
 
 				if (cmmd.param & HAS_DD) {
-					dd = get_mode_reg(w, OP.Byte);
-					//trace ("\n dd = %o, %o\n", dd.val, dd.adr);
+					dd = get_mode_reg(w, oper.Byte);
+					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
 				}
 				
 				if (cmmd.param & HAS_NN) {
