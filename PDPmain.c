@@ -63,10 +63,16 @@ void test_wr() {
 	do_add();
 }*/
 	
-int main () {
+int main (int argc, char * argv[]) {
 	
-	//test_wr();
-	load_file();
+	mem[ostat] = -1;
+	
+	if (argc == 1) {
+		trace ("USAGE: %s sum\n", argv[0]);
+		exit(1);
+	}
+	
+	load_file(argv[1]);
 	run();
 	return 0;
 }
