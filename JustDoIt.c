@@ -5,7 +5,7 @@
 int n, XX;
 word reg[8];
 
-struct Operand psw;
+struct Operand oper;
 
 
 struct SSDD ss;
@@ -23,7 +23,7 @@ void do_mov() {
 	dd.res = ss.val;
 	w_write(dd.adr, dd.res);
 		
-	NZVC(psw);
+	NZVC(oper);
 }
 
 void do_bmov() {
@@ -33,7 +33,7 @@ void do_bmov() {
 	
 	if (dd.adr == odata)
 		printf("%c", ss.val);
-	NZVC(psw);
+	NZVC(oper);
 
 }
 
@@ -42,7 +42,7 @@ void do_add() {
 	
 	dd.res = dd.val + ss.val;
 	w_write(dd.adr, dd.res);
-	NZVC(psw);
+	NZVC(oper);
 	
 }
 
@@ -60,7 +60,7 @@ void do_clr() {
 	w_write(dd.adr, dd.res);
 	N = 0;
 	Z = 1;
-	NZVC(psw);
+	NZVC(oper);
 
 }
 
@@ -84,11 +84,30 @@ void do_bpl() {
 void do_tstb() {
 	
 	dd.res = dd.val;
-	NZVC(psw);
+	NZVC(oper);
 }
 
 void do_tst() {
 	
 	dd.res = dd.val;
-	NZVC(psw);
+	NZVC(oper);
 }
+
+void do_jsr() {
+	
+	sp -= 2;
+	w_write(sp, reg[oper.r1]);
+	reg[oper.r1] = pc;
+	pc = dd.adr;
+	trace ("R%o ", oper.r1);
+}
+
+void do_rts() {
+	
+	pc = reg[oper.r2];
+	reg[oper.r2] = w_read(sp);
+	sp += 2;
+	trace ("R%o ", oper.r2);
+}
+	
+
