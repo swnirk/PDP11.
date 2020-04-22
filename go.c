@@ -19,17 +19,16 @@ void trace (const char * fmt, ...) {
 	va_end(ap);
 }
 
-void load_file() {
+void load_file(const char * sum) {
 	
-	FILE * test = NULL;
+	FILE * test = fopen(sum, "r");
 	Adress a;
 	unsigned int bt;
 	word N;
-	test = fopen("/home/ira/информатика/workpdp/01_sum.pdp.o", "r");
 	
 	if (test == NULL) {
 		
-		perror("01_sum.pdp.o");
+		perror("sum");
 		exit(1);
 	}
 	
@@ -137,7 +136,18 @@ void NZVC (struct Operand oper) {
 	
 	Z = (dd.res == 0);
 	
-	trace ("\n N = %d\n C = %d\n Z = %d", N, C, Z);
+	if (N == 1) 
+		trace("N");
+	if (N != 1) 
+		trace("-");
+	if (C == 1)
+		trace("C");
+	if (C != 1)
+		trace("-");
+	if (Z == 1)
+		trace("Z");
+	if (Z != 1)
+		trace("-");
 }
 
 struct SSDD get_NN (word w) {
@@ -178,20 +188,15 @@ struct SSDD get_mode_reg(word w, int b) {
 			break;
 		
 		case 2:
-			
-			if (r == 7) {
-				
-				res.adr = reg[r];
-				res.val = b ? b_read(res.adr) : w_read(res.adr);
+		
+			res.adr = reg[r];
+			res.val = b ? b_read(res.adr) : w_read(res.adr);
+
+			if (r == 7) 
 				trace ("#%o ", res.val);
-			}
 			
-			else {
-				
-				res.adr = reg[r];
-				res.val = b ? b_read(res.adr) : w_read(res.adr);
+			else 
 				trace ("(R%o)+ ", r);
-			}
 				
 			if (r == 7 || r == 6 || b == 0)
 				reg[r] += 2;
@@ -275,8 +280,8 @@ void run() {
 	while (1) {
 		
 		word w = w_read(pc);
-		trace ("%06o : %06o ", pc, w);			//отладочная печать
-		//trace ("%06o : ", pc);						//обычная печать
+		//trace ("%06o : %06o ", pc, w);			//отладочная печать
+		trace ("%06o : ", pc);						//обычная печать
 		pc += 2;
 		struct Operand oper = create(w);
 		int i;
