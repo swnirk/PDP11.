@@ -23,18 +23,19 @@ void do_mov() {
 	dd.res = ss.val;
 	w_write(dd.adr, dd.res);
 		
-	NZVC(oper);
+	NZVC(dd.res);
 }
 
 void do_bmov() {
 
 	dd.res = ss.val;
 	b_write(dd.adr, (byte)dd.res);
-	
-	if (dd.adr == odata)
-		printf("%c", ss.val);
-	NZVC(oper);
 
+
+	fprintf(stderr, "Wanna print to dd.adr=%o?\n", dd.adr);
+	if (dd.adr == odata)
+		fprintf(stderr, "%c %d\n", ss.val, ss.val);
+	NZVC(dd.res);
 }
 
 	
@@ -42,7 +43,7 @@ void do_add() {
 	
 	dd.res = dd.val + ss.val;
 	w_write(dd.adr, dd.res);
-	NZVC(oper);
+	NZVC(dd.res);
 	
 }
 
@@ -60,7 +61,7 @@ void do_clr() {
 	w_write(dd.adr, dd.res);
 	N = 0;
 	Z = 1;
-	NZVC(oper);
+	NZVC(dd.res);
 
 }
 
@@ -84,13 +85,13 @@ void do_bpl() {
 void do_tstb() {
 	
 	dd.res = dd.val;
-	NZVC(oper);
+	NZVC(dd.res);
 }
 
 void do_tst() {
 	
 	dd.res = dd.val;
-	NZVC(oper);
+	NZVC(dd.res);
 }
 
 void do_jsr() {
