@@ -42,9 +42,9 @@ struct Command {
 };
 
 struct Operand {
-    int Byte;        // Byte
-    word r1;      	// 1 operand
-    word r2;       // 2 operand
+	
+	word r1;      	// 1 operand
+	word r2;       // 2 operand
 };
 
 void b_write (Adress adr, byte b);
@@ -59,7 +59,7 @@ void load_file();
 void run();
 void print_reg();
 void mem_dump(Adress A, word N);
-void NZVC(struct Operand oper);
+void NZVC(word w);
 struct Operand create(word w);
 
 //struct SSDD get_NN (word w);
@@ -83,7 +83,7 @@ void do_rts();
 
 extern int b_or_w;
 extern int N, Z, C;
-extern int n, XX;
+extern int bit, n, XX;
 extern word X;
 extern byte mem[MEMSIZE];
 extern word reg[8];
