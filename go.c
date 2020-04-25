@@ -10,6 +10,7 @@ struct SSDD ss, dd, NN;
 struct SSDD get_mode_reg(word w, int b);
 byte mem[MEMSIZE];
 word reg[8];
+int bit;
 
 void trace (const char * fmt, ...) {
 	
@@ -113,29 +114,17 @@ word byte_or_word(byte b) {
 struct Operand create(word w) {
     struct Operand res;
 
-    res.Byte = (w >> 15);
-    res.r1 = (w >> 6)&7;
-    res.r2 = w & 7;
-    return res;
+	res.r1 = (w >> 6)&7;
+	res.r2 = w & 7;
+	return res;
 }
 
-void NZVC (struct Operand oper) {
+void NZVC (word w) {
 	
-	
-	if (oper.Byte) {
-		
-		N = (dd.res >> 7) & 1;
-		C = (dd.res >> 8) & 1;
-	}
-	
-	else {
-		
-		N = (dd.res >> 15) & 1;
-		C = (dd.res >> 16) & 1;
-	}
-	
-	Z = (dd.res == 0);
-	
+	N = (bit ? (w >> 15) : (w >> 7)) & 1;
+    Z = (w == 0);
+    C = (bit ? (w >> 16) : (w >> 8)) & 1;
+    
 	if (N == 1) 
 		trace("N");
 	if (N != 1) 
@@ -208,16 +197,21 @@ struct SSDD get_mode_reg(word w, int b) {
 		case 3:
 		
 			res.adr = reg[r];
-			res.adr = reg[r];
-			res.val = w_read(res.adr);
-			reg[r] += 2;
+			res.adr = w_read (res.adr);
 			
-			if (r == 7 || r == 6 || b == 0) 
-				trace ("@#%o", w_read(res.adr));	
-            else 
-				trace ("@(R%o)+", r);
+			if (r == 7 || r == 6 || b == 0) {
 				
-            break;
+				res.val = w_read (res.adr);
+				trace ("@#%o", res.val);
+				reg[r] += 2;
+			}
+            else {
+				res.val = b_read (res.adr);
+				reg[r] += 2;       // reg[r] ++;
+				trace ("@(R%o)+", r);
+			}
+			
+			break;
 			
 		case 4:
 		
