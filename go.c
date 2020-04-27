@@ -278,8 +278,8 @@ void run() {
 		
 		word w = w_read(pc);
 		//trace ("|||||||| w = %o ||||||||\n", w);
-		//trace ("%06o : %06o ", pc, w);			//отладочная печать
-		trace ("%06o : ", pc);						//обычная печать
+		trace ("%06o : %06o \n", pc, w);			//отладочная печать
+		//trace ("%06o : ", pc);						//обычная печать
 		pc += 2;
 		struct Operand oper = create(w);
 		int i;
