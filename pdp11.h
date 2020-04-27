@@ -43,6 +43,7 @@ struct Command {
 
 struct Operand {
 	
+	byte Byte;
 	word r1;      	// 1 operand
 	word r2;       // 2 operand
 };
@@ -82,7 +83,7 @@ void do_rts();
 
 
 extern int b_or_w;
-extern int N, Z, C;
+extern int N, Z, C, mr, lr;
 extern int bit, n, XX;
 extern word X;
 extern byte mem[MEMSIZE];
