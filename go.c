@@ -4,7 +4,7 @@
 #include <stdarg.h>
 
 int b_or_w;
-int N, Z, C;
+int N, Z, C, r1, r2;
 
 struct SSDD ss, dd, NN;
 struct SSDD get_mode_reg(word w, int b);
@@ -114,16 +114,20 @@ word byte_or_word(byte b) {
 struct Operand create(word w) {
     struct Operand res;
 
+	//trace ("w = %o \n", w);
+	res.Byte = (w >> 15);
 	res.r1 = (w >> 6)&7;
+	//printf ("res.r1 = %o\n", res.r1);
 	res.r2 = w & 7;
+	//printf ("res.r2 = %o\n", res.r2);
 	return res;
 }
 
 void NZVC (word w) {
 	
 	N = (bit ? (w >> 15) : (w >> 7)) & 1;
-    Z = (w == 0);
-    C = (bit ? (w >> 16) : (w >> 8)) & 1;
+	Z = (w == 0);
+	C = (bit ? (w >> 16) : (w >> 8)) & 1;
     
 	if (N == 1) 
 		trace("N");
@@ -270,10 +274,10 @@ void run() {
 	
 	pc = 01000;
 	w_write(ostat, 0xFF);
-	
 	while (1) {
 		
 		word w = w_read(pc);
+		//trace ("|||||||| w = %o ||||||||\n", w);
 		//trace ("%06o : %06o ", pc, w);			//отладочная печать
 		trace ("%06o : ", pc);						//обычная печать
 		pc += 2;
@@ -290,6 +294,16 @@ void run() {
 				
 				trace ("%s    ", cmmd.name);
 				
+				if (cmmd.param & HAS_R1) {
+					
+					r1 = (w>>6)&7;
+				}
+				
+				if (cmmd.param & HAS_R2) {
+					
+					r2 = w&7;
+				}
+				
 				if (cmmd.param & HAS_SS) {
 					ss = get_mode_reg (w >> 6, oper.Byte);
 					trace ("\n ss = %o, %o\n", ss.val, ss.adr);
@@ -297,6 +311,7 @@ void run() {
 					
 
 				if (cmmd.param & HAS_DD) {
+					
 					dd = get_mode_reg(w, oper.Byte);
 					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
 				}
@@ -310,7 +325,7 @@ void run() {
 					
 					XX = (char)(w & 255);
 				}
-				
+			
 				cmmd.do_func();
 					
 			}
