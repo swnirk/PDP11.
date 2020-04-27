@@ -9,18 +9,23 @@ typedef word Adress;			 // 16 bit
 #define MEMSIZE (64*1024)
 #define pc reg[7]
 #define sp reg[6]
-#define HAS_SS 1
+/*#define HAS_SS 1
 #define HAS_DD 2
-#define HAS_NN 4
-#define HAS_XX 8
-#define HAS_MR (1<<4)
+#define HAS_NN 3
+#define HAS_R1 4
+#define HAS_R2 5
+#define HAS_XX 8*/
 #define HASNT_PARAM 0
+#define HAS_XX 1
+#define HAS_SS (1<<1)
+#define HAS_DD (1<<2)
+#define HAS_NN (1<<3)
+#define HAS_R1 (1<<4)
+#define HAS_R2 (1<<5)
 #define ostat 0177564			// регистр данных ввода
 #define odata 0177566			// регистр данных дисплея
 #define BW(w, is_byte) (is_byte ? ((w)>>7)&1 : ((w)>>15)&1 )
 #define pc reg[7]
-#define HAS_MR (1<<4)
-#define HAS_LR (1<<5)
 
 
 struct SSDD {
@@ -83,8 +88,9 @@ void do_rts();
 
 
 extern int b_or_w;
-extern int N, Z, C, mr, lr;
+extern int N, Z, C;
 extern int bit, n, XX;
+extern int r1, r2;
 extern word X;
 extern byte mem[MEMSIZE];
 extern word reg[8];
