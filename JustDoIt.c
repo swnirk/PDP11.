@@ -3,10 +3,8 @@
 #include "pdp11.h"
 
 int n, XX;
-word reg[8], w;
+word reg[8];
 int r1, r2;
-
-struct Operand oper;
 
 
 struct SSDD ss;
@@ -32,10 +30,10 @@ void do_bmov() {
 	dd.res = ss.val;
 	b_write(dd.adr, (byte)dd.res);
 
-
-	fprintf(stderr, "Wanna print to dd.adr=%o?\n", dd.adr);
+	//fprintf(stderr, "Wanna print to dd.adr=%o?\n", dd.adr);		//отладочная печать
 	if (dd.adr == odata)
 		fprintf(stderr, "%c %d\n", ss.val, ss.val);
+		
 	NZVC(dd.res);
 }
 
@@ -99,21 +97,17 @@ void do_jsr() {
 	
 	sp -= 2;
 	w_write(sp, reg[r1]);
-	//trace ("r1 = %o\n", r1);
 	reg[r1] = pc;
 	pc = dd.adr;
 	trace ("R%o \n", r1);
-	//trace ("R0 = %o", reg[0]);
 }
 
 void do_rts() {
 	
 	pc = reg[r2];
-	//trace ("r2 = %o\n", r2);
 	reg[r2] = w_read(sp);
 	sp += 2;
 	trace ("R%o \n", r1);
-	//trace ("R0 = %o", reg[0]);
 }
 	
 

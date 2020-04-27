@@ -3,8 +3,8 @@
 #include "pdp11.h"
 #include <stdarg.h>
 
-int b_or_w;
-int N, Z, C, r1, r2;
+int N, Z, C;
+int r1, r2;
 
 struct SSDD ss, dd, NN;
 struct SSDD get_mode_reg(word w, int b);
@@ -60,6 +60,23 @@ void mem_dump(Adress A, word N) {
 
 }
 
+void print_reg()
+{
+	trace("\n");
+	
+	int i;
+	for (i = 0; i < 8; i += 2)
+		trace ("R%d = %06o   ", i, reg[i]);
+		
+	printf("\n");
+	
+	for (i = 1; i < 8; i += 2)
+		trace("R%d = %06o    ", i, reg[i]);
+		
+	trace ("\n\n");
+
+}
+
 struct Command commd[] = {
 	
 	{0170000, 0010000, "mov",  do_mov,  HAS_DD | HAS_SS},
@@ -78,50 +95,6 @@ struct Command commd[] = {
 };
 
 
-void print_reg()
-{
-	trace("\n");
-	
-	int i;
-	for (i = 0; i < 8; i += 2)
-		trace ("R%d = %06o   ", i, reg[i]);
-		
-	printf("\n");
-	
-	for (i = 1; i < 8; i += 2)
-		trace("R%d = %06o    ", i, reg[i]);
-		
-	trace ("\n\n");
-
-}
-
-
-word byte_or_word(byte b) {
-
-    word w;
-    if (BW(b, 1) == 0) {
-        w = 0;
-        w |= b;
-    }
-    else {
-        w = ~0xFF;
-        w |= b;
-    }
-    return w;
-}
-
-
-struct Operand create(word w) {
-    struct Operand res;
-
-	//trace ("w = %o \n", w);
-	res.Byte = (w >> 15);
-	res.r1 = (w >> 6)&7;
-	//printf ("res.r1 = %o\n", res.r1);
-	res.r2 = w & 7;
-	//printf ("res.r2 = %o\n", res.r2);
-	return res;
-}
 
 void NZVC (word w) {
 	
@@ -193,6 +166,7 @@ struct SSDD get_mode_reg(word w, int b) {
 				
 			if (r == 7 || r == 6 || b == 0)
 				reg[r] += 2;
+				
 			else 
 				reg[r]++;
 				
@@ -277,11 +251,9 @@ void run() {
 	while (1) {
 		
 		word w = w_read(pc);
-		//trace ("|||||||| w = %o ||||||||\n", w);
 		trace ("%06o : %06o \n", pc, w);			//отладочная печать
 		//trace ("%06o : ", pc);						//обычная печать
 		pc += 2;
-		struct Operand oper = create(w);
 		int i;
 		int size = sizeof(commd)/sizeof(struct Command);
 		struct Command cmmd;
@@ -296,29 +268,30 @@ void run() {
 				
 				if (cmmd.param & HAS_R1) {
 					
-					r1 = (w>>6)&7;
+					r1 = (w >> 6) & 7;
 				}
 				
 				if (cmmd.param & HAS_R2) {
 					
-					r2 = w&7;
+					r2 = w & 7;
 				}
 				
 				if (cmmd.param & HAS_SS) {
-					ss = get_mode_reg (w >> 6, oper.Byte);
+					
+					ss = get_mode_reg (w >> 6, w >> 15);
 					trace ("\n ss = %o, %o\n", ss.val, ss.adr);
 				}
 					
 
 				if (cmmd.param & HAS_DD) {
 					
-					dd = get_mode_reg(w, oper.Byte);
+					dd = get_mode_reg(w, w >> 15);
 					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
 				}
 				
 				if (cmmd.param & HAS_NN) {
 					
-					NN = get_NN(w);
+					NN = get_NN (w);
 				}
 				
 				if (cmmd.param & HAS_XX) {
