@@ -73,8 +73,8 @@ struct Command commd[] = {
 	{0177400, 0100000, "bpl",  do_bpl,  HAS_XX},
 	{0177700, 0105700, "tstb", do_tstb, HAS_DD},
 	{0177700, 0005700, "tst",  do_tst,  HAS_DD},
-	{0177000, 0004000, "jsr",  do_jsr,  HAS_DD},
-	{0177770, 0000200, "rts",  do_rts,  HAS_DD},
+	{0177000, 0004000, "jsr",  do_jsr,  HAS_DD | HAS_R1},
+	{0177770, 0000200, "rts",  do_rts,  HAS_R2},
 };
 
 
