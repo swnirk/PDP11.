@@ -98,17 +98,21 @@ void do_jsr() {
 	
 	sp -= 2;
 	w_write(sp, reg[oper.r1]);
+	//trace ("oper.r1 = %o\n", oper,r1);
 	reg[oper.r1] = pc;
 	pc = dd.adr;
-	trace ("R%o ", oper.r1);
+	//trace ("R%o ", pc);
+	//trace ("R0 = %o", reg[0]);
 }
 
 void do_rts() {
 	
 	pc = reg[oper.r2];
+	//trace ("oper.r2 = %o", );
 	reg[oper.r2] = w_read(sp);
 	sp += 2;
-	trace ("R%o ", oper.r2);
+	//trace ("R%o ", pc);
+	//trace ("R0 = %o", reg[0]);
 }
 	
 
