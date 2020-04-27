@@ -3,7 +3,8 @@
 #include "pdp11.h"
 
 int n, XX;
-word reg[8];
+word reg[8], w;
+int r1, r2;
 
 struct Operand oper;
 
@@ -97,9 +98,9 @@ void do_tst() {
 void do_jsr() {
 	
 	sp -= 2;
-	w_write(sp, reg[oper.r1]);
-	//trace ("oper.r1 = %o\n", oper,r1);
-	reg[oper.r1] = pc;
+	w_write(sp, reg[r1]);
+	trace ("r1 = %o\n", r1);
+	reg[r1] = pc;
 	pc = dd.adr;
 	//trace ("R%o ", pc);
 	//trace ("R0 = %o", reg[0]);
@@ -107,9 +108,9 @@ void do_jsr() {
 
 void do_rts() {
 	
-	pc = reg[oper.r2];
-	//trace ("oper.r2 = %o", );
-	reg[oper.r2] = w_read(sp);
+	pc = reg[r2];
+	trace ("r2 = %o\n", r2);
+	reg[r2] = w_read(sp);
 	sp += 2;
 	//trace ("R%o ", pc);
 	//trace ("R0 = %o", reg[0]);
