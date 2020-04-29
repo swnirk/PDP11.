@@ -5,7 +5,6 @@
 
 int N, Z, C;
 int r1, r2;
-int XX;
 
 struct SSDD ss, dd, NN;
 struct SSDD get_mode_reg(word w, int b);
