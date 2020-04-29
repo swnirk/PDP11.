@@ -68,15 +68,21 @@ int main (int argc, char * argv[]) {
 	mem[ostat] = -1;
 	
 	if (argc == 1) {							// проверка существования argv[1] 
-		trace ("USAGE: %s sum\n", argv[0]);
+		printf ("USAGE: %s sum\n", argv[0]);
 		exit(1);
 	}
 	
-	load_file(argv[1]);
+	char str[] = "-t";
+	
+	for (int i = 0; i < 1; i ++) {
+		
+		if (strcmp(str, argv[1]) == 0)
+			trc = 1;
+	}
+	
+	load_file(argv[2]);
 	run();
 	
-	//struct Operand result = craete(w);
 	
 	return 0;
 }
-
