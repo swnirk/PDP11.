@@ -4,7 +4,6 @@
 
 word reg[8];
 int r1, r2;
-int XX;
 
 
 struct SSDD ss;
