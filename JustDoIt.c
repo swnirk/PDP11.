@@ -4,6 +4,7 @@
 
 word reg[8];
 int r1, r2;
+int XX;
 
 
 struct SSDD ss;
@@ -11,7 +12,7 @@ struct SSDD dd;
 
 void do_halt() {
 	
-	printf("\n\n-------------THE END!!!-------------\n\n");
+	trace (trc"\n\n-------------THE END!!!-------------\n\n");
 	print_reg();
 	exit(0);
 }
