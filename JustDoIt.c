@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "pdp11.h"
 
-int n, XX;
 word reg[8];
 int r1, r2;
 

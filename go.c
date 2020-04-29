@@ -128,8 +128,6 @@ struct SSDD get_NN (word w) {
 	return res;
 }
 
-	
-
 struct SSDD get_mode_reg(word w, int b) {
 	
 	struct SSDD res;
@@ -183,7 +181,8 @@ struct SSDD get_mode_reg(word w, int b) {
 				trace ("@#%o", res.val);
 				reg[r] += 2;
 			}
-            else {
+			
+			else {
 				res.val = b_read (res.adr);
 				reg[r] += 2;       // reg[r] ++;
 				trace ("@(R%o)+", r);

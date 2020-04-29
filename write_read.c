@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
-#include "pdp11.h"
 #include <stdarg.h>
-
-#define MEMSIZE (64*1024)
-
+#include "pdp11.h"
 
 byte mem [MEMSIZE];
 
