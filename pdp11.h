@@ -10,6 +10,7 @@ typedef word Adress;			 // 16 bit
 #define pc reg[7]
 #define sp reg[6]
 
+#define TRACE 1
 #define HASNT_PARAM 0
 #define HAS_XX 1
 #define HAS_SS (1<<1)
@@ -71,7 +72,7 @@ void do_tst();
 void do_jsr();
 void do_rts();
 
-
+extern int trc;
 extern int N, Z, C;
 extern int bit, n, XX;
 extern int r1, r2;
