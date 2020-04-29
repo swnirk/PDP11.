@@ -1,10 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "pdp11.h"
-#include <stdarg.h>
+int trc = TRACE;
 
 int N, Z, C;
 int r1, r2;
+int XX;
 
 struct SSDD ss, dd, NN;
 struct SSDD get_mode_reg(word w, int b);
@@ -12,7 +10,10 @@ byte mem[MEMSIZE];
 word reg[8];
 int bit;
 
-void trace (const char * fmt, ...) {
+void trace (int x, const char * fmt, ...) {
+	
+	if (x == trc)
+		return;
 	
 	va_list ap;
 	va_start(ap, fmt);
@@ -29,7 +30,7 @@ void load_file(const char * sum) {
 	
 	if (test == NULL) {
 		
-		perror("sum");
+		perror(sum);
 		exit(1);
 	}
 	
@@ -52,28 +53,28 @@ void mem_dump(Adress A, word N) {
 
 	int i = 0;
 
-	trace ("---------------mem_dump----------------\n");
+	trace (trc, "---------------mem_dump----------------\n");
 	
     for (i = 0; i <= N; i += 2)
-		trace("%06o : %06o\n", A + i , w_read(A + i));
+		trace (trc, "%06o : %06o\n", A + i , w_read(A + i));
 
 
 }
 
 void print_reg()
 {
-	trace("\n");
+	trace (trc, "\n");
 	
 	int i;
 	for (i = 0; i < 8; i += 2)
-		trace ("R%d = %06o   ", i, reg[i]);
+		trace (trc,"R%d = %06o   ", i, reg[i]);
 		
 	printf("\n");
 	
 	for (i = 1; i < 8; i += 2)
-		trace("R%d = %06o    ", i, reg[i]);
+		trace (trc, "R%d = %06o    ", i, reg[i]);
 		
-	trace ("\n\n");
+	trace (trc, "\n\n");
 
 }
 
@@ -103,27 +104,26 @@ void NZVC (word w) {
 	C = (bit ? (w >> 16) : (w >> 8)) & 1;
     
 	if (N == 1) 
-		trace("N");
+		trace (trc, "N");
 	if (N != 1) 
-		trace("-");
+		trace (trc, "-");
 	if (C == 1)
-		trace("C");
+		trace (trc, "C");
 	if (C != 1)
-		trace("-");
+		trace (trc, "-");
 	if (Z == 1)
-		trace("Z");
+		trace (trc, "Z");
 	if (Z != 1)
-		trace("-");
+		trace (trc, "-");
 }
 
 struct SSDD get_NN (word w) {
 	
 	struct SSDD res;
 
-	res.adr = (w >> 6) & 07;
 	res.val = w & 077;
 
-	trace ("R%d, %o", reg[NN.adr], pc - 2 * NN.val);
+	trace (trc, "R%d, %o", reg[NN.adr], pc - 2 * NN.val);
 
 	return res;
 }
@@ -141,14 +141,14 @@ struct SSDD get_mode_reg(word w, int b) {
 		
 			res.adr = r;
 			res.val = reg[r];
-			trace ("R%o ", r);
+			trace (trc, "R%o ", r);
 			break;
 		
 		case 1:
 		
 			res.adr = reg[r];
 			res.val = b ? b_read(res.adr) : w_read(res.adr); 
-			trace ("(R%o) ", r);
+			trace (trc, "(R%o) ", r);
 			break;
 		
 		case 2:
@@ -157,10 +157,10 @@ struct SSDD get_mode_reg(word w, int b) {
 			res.val = b ? b_read(res.adr) : w_read(res.adr);
 
 			if (r == 7) 
-				trace ("#%o ", res.val);
+				trace (trc, "#%o ", res.val);
 			
 			else 
-				trace ("(R%o)+ ", r);
+				trace (trc, "(R%o)+ ", r);
 				
 			if (r == 7 || r == 6 || b == 0)
 				reg[r] += 2;
@@ -178,14 +178,14 @@ struct SSDD get_mode_reg(word w, int b) {
 			if (r == 7 || r == 6 || b == 0) {
 				
 				res.val = w_read (res.adr);
-				trace ("@#%o", res.val);
+				trace (trc, "@#%o", res.val);
 				reg[r] += 2;
 			}
 			
 			else {
 				res.val = b_read (res.adr);
 				reg[r] += 2;       // reg[r] ++;
-				trace ("@(R%o)+", r);
+				trace (trc, "@(R%o)+", r);
 			}
 			
 			break;
@@ -204,13 +204,13 @@ struct SSDD get_mode_reg(word w, int b) {
 				res.val = b_read (res.adr);
 			}
 			
-			trace ("-(R%d) ", r);
+			trace (trc, "-(R%d) ", r);
             
 			break;
 		
 		case 5:
 		
-			trace ("@-(R%o) ", r);
+			trace (trc, "@-(R%o) ", r);
 			reg[r] -= 2;
 			res.adr = reg[r];
 			res.adr = w_read (res.adr);
@@ -226,10 +226,10 @@ struct SSDD get_mode_reg(word w, int b) {
 			res.val = w_read(res.adr);
 			
 			if (r == 7) 
-				trace ("%o ", res.adr);
+				trace (trc, "%o ", res.adr);
 				
 			else 
-				trace ("%o(R%d) ", X, r);
+				trace (trc, "%o(R%d) ", X, r);
 				
 			break;
 			
@@ -243,14 +243,14 @@ struct SSDD get_mode_reg(word w, int b) {
 
 void run() {
 	
-	trace ("\n-------------running-------------\n");
+	trace (trc, "\n-------------running-------------\n");
 	
 	pc = 01000;
 	w_write(ostat, 0xFF);
 	while (1) {
 		
 		word w = w_read(pc);
-		trace ("%06o : %06o \n", pc, w);			//отладочная печать
+		trace (trc, "%06o : %06o \n", pc, w);			//отладочная печать
 		//trace ("%06o : ", pc);						//обычная печать
 		pc += 2;
 		int i;
@@ -263,7 +263,7 @@ void run() {
 			
 			if ((cmmd.mask & w) == cmmd.opcode) {
 				
-				trace ("%s    ", cmmd.name);
+				trace (trc, "%s    ", cmmd.name);
 				
 				if (cmmd.param & HAS_R1) {
 					
@@ -278,14 +278,14 @@ void run() {
 				if (cmmd.param & HAS_SS) {
 					
 					ss = get_mode_reg (w >> 6, w >> 15);
-					trace ("\n ss = %o, %o\n", ss.val, ss.adr);
+					trace (trc, "\n ss = %o, %o\n", ss.val, ss.adr);
 				}
 					
 
 				if (cmmd.param & HAS_DD) {
 					
 					dd = get_mode_reg(w, w >> 15);
-					trace ("\n dd = %o, %o\n", dd.val, dd.adr);
+					trace (trc, "\n dd = %o, %o\n", dd.val, dd.adr);
 				}
 				
 				if (cmmd.param & HAS_NN) {
@@ -303,7 +303,7 @@ void run() {
 			}
 		}
 						
-		trace ("\n");
+		trace (trc, "\n");
 		print_reg();
 	}
 }
