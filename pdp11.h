@@ -9,12 +9,7 @@ typedef word Adress;			 // 16 bit
 #define MEMSIZE (64*1024)
 #define pc reg[7]
 #define sp reg[6]
-/*#define HAS_SS 1
-#define HAS_DD 2
-#define HAS_NN 3
-#define HAS_R1 4
-#define HAS_R2 5
-#define HAS_XX 8*/
+
 #define HASNT_PARAM 0
 #define HAS_XX 1
 #define HAS_SS (1<<1)
@@ -22,10 +17,10 @@ typedef word Adress;			 // 16 bit
 #define HAS_NN (1<<3)
 #define HAS_R1 (1<<4)
 #define HAS_R2 (1<<5)
+
 #define ostat 0177564			// регистр данных ввода
 #define odata 0177566			// регистр данных дисплея
-#define BW(w, is_byte) (is_byte ? ((w)>>7)&1 : ((w)>>15)&1 )
-#define pc reg[7]
+
 
 
 struct SSDD {
@@ -46,29 +41,20 @@ struct Command {
 	
 };
 
-struct Operand {
-	
-	byte Byte;
-	word r1;      	// 1 operand
-	word r2;       // 2 operand
-};
 
 void b_write (Adress adr, byte b);
 byte b_read (Adress adr);
 void w_write (Adress adr, word w);
 word w_read (Adress adr);
 
-word byte_to_word(byte b);
 
-void trace(const char * fmt, ...);
 void load_file();
 void run();
+void NZVC(word w);
+void trace(const char * fmt, ...);
 void print_reg();
 void mem_dump(Adress A, word N);
-void NZVC(word w);
-struct Operand create(word w);
 
-//struct SSDD get_NN (word w);
 
 
 void do_mov();
@@ -86,8 +72,6 @@ void do_jsr();
 void do_rts();
 
 
-
-extern int b_or_w;
 extern int N, Z, C;
 extern int bit, n, XX;
 extern int r1, r2;
@@ -97,6 +81,5 @@ extern word reg[8];
 
 extern struct Command commd[];
 extern struct SSDD ss, dd, NN;
-extern struct Operand oper;
 
 //#endif
